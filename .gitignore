@@ -1,0 +1,26 @@
+# Ambiente Python local
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Configuração local (contém contato pessoal): use config/config.sample.ini como modelo
+config/config.ini
+.env
+
+# Dados do museu (CSV bruto do Tainacan, tabelas limpas e ligações com o Wikidata):
+# os direitos são do museu e o CSV bruto tem campos internos. Não publicar.
+bruto/*
+!bruto/.gitkeep
+data/*
+!data/.gitkeep
+
+# Gerados pelos scripts (podem ser refeitos)
+resultados/*
+!resultados/.gitkeep
+
+# Outros
+*.zip
+*.log
+.DS_Store
+.vscode/
