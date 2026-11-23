@@ -24,3 +24,6 @@ resultados/*
 *.log
 .DS_Store
 .vscode/
+
+# Contexto para o Claude Code (uso pessoal)
+CLAUDE.md
