@@ -5,12 +5,12 @@ e as junta aos registros do museu.
 Fluxo:
   1. lê data/sameas.csv (só linhas com wikidata_id preenchido);
   2. pede ao Wikidata os dados desses itens (API wbgetentities);
-  3. salva uma tabela legível em resultados/wikidata_propriedades.csv;
+  3. salva uma tabela legível em resultados/pipeline/final/wikidata_propriedades.csv;
   4. grava no Elasticsearch, nos seus registros, as relações cujo valor é
      outro item do Wikidata (país, tipo, setor...), como o artigo faz.
 
 Uso, de dentro do container (pasta /app), DEPOIS de rodar o facom_loader.py:
-  python scripts/buscar_propriedades.py
+  python scripts/pipeline/buscar_propriedades.py
 
 ATENÇÃO: o facom_loader.py apaga e recria o índice. Se rodá-lo de novo,
 rode este script em seguida.
@@ -162,9 +162,9 @@ def main():
         linhas.append(linha)
 
     tabela = pd.DataFrame(linhas)
-    os.makedirs("resultados", exist_ok=True)
-    tabela.to_csv("resultados/wikidata_propriedades.csv", index=False)
-    print("\nTabela salva em resultados/wikidata_propriedades.csv\n")
+    os.makedirs("resultados/pipeline/final", exist_ok=True)
+    tabela.to_csv("resultados/pipeline/final/wikidata_propriedades.csv", index=False)
+    print("\nTabela salva em resultados/pipeline/final/wikidata_propriedades.csv\n")
     for _, l in tabela.iterrows():
         print(f"=== {l['nome_no_museu']}  ->  {l['wikidata_id']} ({l['wikidata_label']})")
         for nome in list(PROPS_ITEM.values()) + list(PROPS_TEXTO.values()):

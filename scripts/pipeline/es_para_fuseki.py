@@ -6,7 +6,7 @@ mas sem as partes do museu SMG (vários índices, cache do Wikidata etc.).
 
 Uso, de dentro do container (pasta /app), DEPOIS do facom_loader.py e do
 buscar_propriedades.py:
-  python scripts/es_para_fuseki.py
+  python scripts/pipeline/es_para_fuseki.py
 
 Pode rodar quantas vezes quiser: ele SUBSTITUI o conteúdo do Fuseki
 (não duplica).

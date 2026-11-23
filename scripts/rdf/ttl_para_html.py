@@ -1,15 +1,15 @@
 """
-Gera resultados/acervo_completo.html: uma página para explorar o RDF completo.
-Lê resultados/acervo_completo.ttl e resultados/campos_propostos.csv (gerados por csv_para_rdf.py).
-Uso:  python scripts/ttl_para_html.py     (depois abra o .html com duplo clique)
+Gera resultados/rdf/acervo_completo.html: uma página para explorar o RDF completo.
+Lê resultados/rdf/acervo_completo.ttl e resultados/rdf/campos_propostos.csv (gerados por csv_para_rdf.py).
+Uso:  python scripts/rdf/ttl_para_html.py     (depois abra o .html com duplo clique)
 """
 import csv, json
 from pathlib import Path
 from rdflib import Graph, URIRef, Literal, RDF, RDFS
 
-TTL = Path("resultados/acervo_completo.ttl")
-CAMPOS = Path("resultados/campos_propostos.csv")
-SAIDA = Path("resultados/acervo_completo.html")
+TTL = Path("resultados/rdf/acervo_completo.ttl")
+CAMPOS = Path("resultados/rdf/campos_propostos.csv")
+SAIDA = Path("resultados/rdf/acervo_completo.html")
 
 g = Graph(); g.parse(data=TTL.read_text(encoding="utf-8"), format="turtle")   # data= funciona em qualquer versão do rdflib
 colunas = list(csv.DictReader(open(CAMPOS, encoding="utf-8")))

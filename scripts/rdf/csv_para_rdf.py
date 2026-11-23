@@ -7,9 +7,9 @@ afirmação RDF para cada célula preenchida. Serve para mostrar que dá para te
 todos os campos em RDF, e para discutir qual propriedade cada campo deve virar.
 
 Uso, de dentro do container (pasta /work), com o CSV em bruto/:
-  python scripts/csv_para_rdf.py
+  python scripts/rdf/csv_para_rdf.py
 
-Gera, em resultados/:
+Gera, em resultados/rdf/:
   acervo_completo.ttl     -> o RDF (abre em qualquer editor de texto)
   campos_propostos.csv    -> uma linha por coluna do CSV: se é publicada, qual
                              propriedade RDF recebe e em quantos itens está preenchida
@@ -31,8 +31,8 @@ FACOM = Namespace(PREFIX + "prop/")       # termos próprios, para o que não te
 SDO = Namespace("https://schema.org/")
 
 ENTRADA = sorted(glob.glob("bruto/*.csv"))
-SAIDA_TTL = Path("resultados/acervo_completo.ttl")
-SAIDA_CAMPOS = Path("resultados/campos_propostos.csv")
+SAIDA_TTL = Path("resultados/rdf/acervo_completo.ttl")
+SAIDA_CAMPOS = Path("resultados/rdf/campos_propostos.csv")
 
 VAZIOS = {"", "-", "s", "s/r", "s\\r", "nan"}   # "s\\r" = "sem registro" digitado com barra invertida
 CORRECOES_FABRICANTE = {"Dell lnc": "Dell Inc"}   # erro de digitação conhecido
@@ -165,7 +165,7 @@ def main():
                 else:
                     g.add((item, prop, Literal(valor)))
 
-    SAIDA_TTL.parent.mkdir(exist_ok=True)
+    SAIDA_TTL.parent.mkdir(parents=True, exist_ok=True)
     dados = g.serialize(format="turtle")
     if isinstance(dados, bytes):          # rdflib 5 devolve bytes; rdflib 6+ devolve texto
         dados = dados.decode("utf-8")

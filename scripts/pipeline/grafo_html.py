@@ -5,13 +5,13 @@ Wikidata, buscar um nó, destacar os vizinhos de um nó e marcar os
 fabricantes que ficaram sem ligação com o Wikidata.
 
 Lê as triplas do Fuseki (as mesmas que você consulta em http://localhost:3030)
-e escreve resultados/grafo.html. Depois é só abrir esse arquivo no navegador.
+e escreve resultados/pipeline/final/grafo.html. Depois é só abrir esse arquivo no navegador.
 
 Uso, de dentro do container (pasta /work), depois de rodar es_para_fuseki.py:
-  python scripts/grafo_html.py
+  python scripts/pipeline/grafo_html.py
 
 Para mostrar nomes em vez de códigos (Q30 -> Estados Unidos, P17 -> país), o
-script pergunta os nomes ao Wikidata e guarda em resultados/wikidata_nomes.json
+script pergunta os nomes ao Wikidata e guarda em resultados/pipeline/apoio/wikidata_nomes.json
 (só pergunta o que ainda não tem). Se o Wikidata não responder, o grafo sai
 igual, só com os códigos.
 """
@@ -23,8 +23,8 @@ import requests
 
 ENDPOINT = "http://fuseki:3030/heritage-connector/sparql"
 API = "https://www.wikidata.org/w/api.php"
-SAIDA = Path("resultados/grafo.html")
-CACHE = Path("resultados/wikidata_nomes.json")
+SAIDA = Path("resultados/pipeline/final/grafo.html")
+CACHE = Path("resultados/pipeline/apoio/wikidata_nomes.json")
 LOCAL = "http://example.org/facom/"
 
 PREFIXOS = {
@@ -135,7 +135,7 @@ def buscar_nomes(ids):
                 print(f"  (sem resposta do Wikidata: {erro.__class__.__name__})")
                 time.sleep(3)
         time.sleep(1)
-    CACHE.parent.mkdir(exist_ok=True)
+    CACHE.parent.mkdir(parents=True, exist_ok=True)
     CACHE.write_text(json.dumps(nomes, ensure_ascii=False, indent=1), encoding="utf-8")
     return nomes
 
@@ -441,7 +441,7 @@ def main():
     nomes = buscar_nomes(ids)
     rels = preparar_relacoes(nos, arestas, nomes)
 
-    SAIDA.parent.mkdir(exist_ok=True)
+    SAIDA.parent.mkdir(parents=True, exist_ok=True)
     html = (PAGINA
             .replace("__NOS__", js_json(nos))
             .replace("__ARESTAS__", js_json(arestas))

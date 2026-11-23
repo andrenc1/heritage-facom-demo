@@ -8,7 +8,7 @@ Entrada (tabelas já limpas, preparadas à parte a partir do CSV do Tainacan), n
   objects.csv, organisations.csv, object_maker.csv
 
 Uso, de dentro do container (pasta /app):
-  python scripts/facom_loader.py
+  python scripts/pipeline/facom_loader.py
 
 ATENÇÃO: datastore.create_index() APAGA o índice ELASTIC_SEARCH_INDEX do
 config.ini e o recria vazio. Use um índice só de teste.

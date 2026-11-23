@@ -10,10 +10,10 @@ Se o Wikidata responder "429 Too Many Requests" (limite de pedidos), o script
 espera e tenta de novo, em vez de parar.
 
 Uso, de dentro do container (pasta /work):
-  python scripts/buscar_candidatos.py
+  python scripts/pipeline/buscar_candidatos.py
 
 Gera:
-  resultados/sameas_candidatos.csv  -> todos os candidatos, para você consultar
+  resultados/pipeline/apoio/sameas_candidatos.csv  -> todos os candidatos, para você consultar
   data/sameas.csv             -> modelo para VOCÊ preencher o wikidata_id
                                  (só é criado se ainda não existir, para não
                                  apagar o que você já preencheu)
@@ -79,7 +79,7 @@ def buscar(nome, idioma):
 
 
 def main():
-    Path("resultados").mkdir(exist_ok=True)
+    Path("resultados/pipeline/apoio").mkdir(parents=True, exist_ok=True)
     registros = pd.read_csv("data/organisations.csv")
     linhas = []
     falhas = []
@@ -120,8 +120,8 @@ def main():
             print("  (nenhum candidato encontrado)")
         time.sleep(PAUSA_ENTRE_REGISTROS)
 
-    pd.DataFrame(linhas).to_csv("resultados/sameas_candidatos.csv", index=False)
-    print("\nCandidatos salvos em resultados/sameas_candidatos.csv")
+    pd.DataFrame(linhas).to_csv("resultados/pipeline/apoio/sameas_candidatos.csv", index=False)
+    print("\nCandidatos salvos em resultados/pipeline/apoio/sameas_candidatos.csv")
 
     if falhas:
         print("\nATENÇÃO: estas buscas ficaram incompletas (limite de pedidos).")
