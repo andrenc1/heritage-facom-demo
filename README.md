@@ -2,9 +2,9 @@
 
 Um ambiente pronto para testar o framework [Heritage Connector](https://github.com/TheScienceMuseum/heritage-connector) (Dutia & Stack, 2021) com **qualquer CSV exportado do [Tainacan](https://tainacan.org/)**: carrega o catálogo como um grafo, liga os fabricantes ao Wikidata e permite consultar o acervo por relações que não estavam no CSV.
 
-O teste inicial foi feito com o acervo de dispositivos de entrada e saída do [Museu FACOM](https://tainacan.facom.ufu.br/) (UFU), mas **este repositório não traz dados de nenhum museu**: você coloca o seu CSV na pasta `bruto/` e o sistema gera o resto.
+O teste inicial foi feito com o acervo de dispositivos de entrada e saída do [Museu FACOM](https://tainacan.facom.ufu.br/) (UFU), com a ideia de aplicar o framework ao catálogo do museu depois. **Este repositório não traz dados de nenhum museu**: você coloca o seu CSV na pasta `bruto/` e o sistema gera o resto.
 
-> Projeto de estudo. Não é oficial e não tem relação com o Science Museum Group nem com o Museu FACOM.
+> **Em desenvolvimento.** Projeto de iniciação científica (UFU), desenvolvido junto ao Museu FACOM como teste para uso futuro no acervo do museu. Os scripts e os resultados podem mudar. Não tem relação com o Science Museum Group, que criou o Heritage Connector.
 
 ## O que o sistema faz
 
@@ -35,7 +35,7 @@ Ficaram sem país 9 objetos: 8 por fabricantes sem ligação com o Wikidata e o 
 ```
 CSV do Tainacan ──limpeza/limpeza_museu_facom.ipynb──> data/*.csv ──facom_loader.py──> Elasticsearch
                                                                 │
-                       data/sameas.csv (fabricante = item do Wikidata, escolha manual)
+   buscar_candidatos.py ──> candidatos do Wikidata ──(você escolhe)──> data/sameas.csv
                                                                 │
                 buscar_propriedades.py (país, sede, fundador...)│
                                                                 ▼
@@ -64,11 +64,15 @@ cp config/config.sample.ini config/config.ini
 # 2. Sobe Elasticsearch, Fuseki e o app (a primeira vez demora alguns minutos)
 docker compose up -d --build
 docker compose ps        # os 3 serviços devem estar "running"
+
+# 3. Ambiente Python local, só para o notebook de limpeza (uma vez)
+python -m venv .venv
+.venv/Scripts/python -m pip install pandas ipykernel      # no Linux/macOS: .venv/bin/python
 ```
 
-**3. Seu CSV.** Exporte o CSV do Tainacan e abra o notebook `limpeza/limpeza_museu_facom.ipynb` no VS Code (kernel do `.venv`, com `pandas` e `ipykernel` instalados). Ao rodar a primeira célula, uma janela deixa você escolher o arquivo. O notebook copia o CSV para `bruto/` e grava 3 tabelas limpas em `data/` (`objects.csv`, `organisations.csv`, `object_maker.csv`); as anteriores vão para `data/anterior/`.
+**4. Seu CSV.** Exporte o CSV do Tainacan e abra o notebook `limpeza/limpeza_museu_facom.ipynb` no VS Code (kernel do `.venv`, com `pandas` e `ipykernel` instalados). Ao rodar a primeira célula, uma janela deixa você escolher o arquivo. O notebook copia o CSV para `bruto/` e grava 3 tabelas limpas em `data/` (`objects.csv`, `organisations.csv`, `object_maker.csv`); as anteriores vão para `data/anterior/`.
 
-**4. Ligações com o Wikidata.** Procure candidatos para os fabricantes novos e escolha à mão:
+**5. Ligações com o Wikidata.** Procure candidatos para os fabricantes novos e escolha à mão:
 
 ```bash
 docker compose exec app python scripts/pipeline/buscar_candidatos.py
@@ -76,7 +80,7 @@ docker compose exec app python scripts/pipeline/buscar_candidatos.py
 
 Ele grava os candidatos em `resultados/pipeline/apoio/sameas_candidatos.csv` e cria o modelo `data/sameas.csv` (se ainda não existir). Preencha a coluna `wikidata_id` (`Q...`); deixe em branco quando não achar ou não tiver certeza. Se o `sameas.csv` já existe, ele **não é alterado**: acrescente os fabricantes novos à mão.
 
-**5. Pipeline**, um passo por vez e nesta ordem:
+**6. Pipeline**, um passo por vez e nesta ordem:
 
 ```bash
 docker compose exec app python scripts/pipeline/facom_loader.py          # carrega no Elasticsearch
@@ -93,7 +97,7 @@ O `facom_loader.py` apaga e recria o índice a cada execução; por isso, depois
 - Registros em JSON: <http://localhost:9200/heritageconnector_test/_search?pretty>
 - Consultas SPARQL: <http://localhost:3030> (dataset `heritage-connector`, aba "query")
 - Grafo desenhado: abra `resultados/pipeline/final/grafo.html` no navegador
-- Grafo em arquivo: `resultados/pipeline/final/grafo_framework.ttl`
+- Grafo em arquivo: `resultados/pipeline/final/grafo_framework.ttl` (abra em qualquer editor de texto: cada objeto e cada organização é um bloco, e `owl:sameAs` aponta para o item do Wikidata)
 
 Exemplo de consulta, "objetos de empresas dos Estados Unidos":
 
@@ -172,7 +176,7 @@ Pipeline (`scripts/pipeline/`):
 | `facom_loader.py` | Aplica o framework às tabelas de `data/` e grava no Elasticsearch |
 | `buscar_propriedades.py` | Traz do Wikidata país, sede, fundador etc. (versão simplificada) |
 | `es_para_fuseki.py` | Copia o grafo para o Fuseki e roda 5 consultas SPARQL |
-| `es_para_ttl.py` | Exporta o mesmo grafo para um arquivo Turtle |
+| `es_para_ttl.py` | Exporta o mesmo grafo para um arquivo Turtle, com prefixos legíveis (`schema:`, `skos:`, `hc:`, `wd:`...) e anos escritos como inteiros (`2004`) |
 | `grafo_html.py` | Desenha o grafo em `resultados/pipeline/final/grafo.html` |
 
 O que o pipeline entrega no final:
@@ -209,6 +213,13 @@ O notebook de limpeza espera as colunas padrão do Tainacan usadas no teste: `sp
 O quarto arquivo, `sameas.csv` (`internal_id, nome_no_museu, wikidata_id`), é preenchido à mão a partir dos candidatos.
 
 Regras de limpeza do notebook: "sem informação" (`s/r`, `-`, `s`, vazio) vira vazio de verdade; espaços e pontos finais soltos saem. Dois dicionários, `CORRIGIR_FABRICANTE` e `CORRIGIR_CATEGORIA`, aceitam correções manuais (no teste, `Dell lnc` virou `Dell Inc`). "Fabricado para a IBM" **não** deve ser unido à IBM sem conferir: "fabricado para" indica quem encomendou, não quem fabricou.
+
+## Próximos passos
+
+- Testar o sistema com outros CSVs do Tainacan (outras coleções do museu) e ajustar a limpeza e a tabela `CAMPOS` do que aparecer.
+- Padronizar com o museu os valores de campos como categoria (hoje há variações como `IO` e `Entrada e Saída (I/O)`) e completar as ligações com o Wikidata.
+- Trocar os endereços provisórios dos registros por endereços definitivos.
+- Avaliar como devolver os dados enriquecidos para o Tainacan.
 
 ## Limites
 
